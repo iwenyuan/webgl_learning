@@ -9,18 +9,18 @@
   <body>
     <canvas id="webgl" width="400" height="400"></canvas>
     <script>
-      let canvas = document.getElementById("webgl");
-      let gl = canvas.getContext("webgl");
+      let canvas = document.getElementById("webgl")
+      let gl = canvas.getContext("webgl")
 
       let vertexSource = `
       void main(){
-      }`;
+      }`
 
       let fragmentSource = `
       void main(){
-      }`;
+      }`
 
-      initShader(gl, vertexSource, fragmentSource);
+      initShaders(gl, vertexSource, fragmentSource)
     </script>
   </body>
 </html>
