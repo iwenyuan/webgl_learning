@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>绘制线段</title>
+    <script src="./initShader.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas width="500" height="500" id="webgl"></canvas>
+    <script>
+      let canvas = document.getElementById("webgl")
+      let gl = canvas.getContext("webgl")
+      let vertexSource = `
+      attribute vec2 a_position;
+      void main(){
+        gl_Position = vec4(a_position,0.0,1.0);
+      }`
+
+      let fragmentSource = `
+      void main(){
+        gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+      }`
+
+      initShaders(gl, vertexSource, fragmentSource)
+
+      gl.clearColor(0.0, 0.0, 0.0, 1.0)
+      gl.clear(gl.COLOR_BUFFER_BIT)
+
+      let a_position = gl.getAttribLocation(gl.program, "a_position")
+
+      let buffer = gl.createBuffer()
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+      gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0)
+      gl.enableVertexAttribArray(a_position)
+
+      let vertices = []
+      canvas.addEventListener("click", function (e) {
+        let x = (e.pageX / canvas.clientWidth) * 2 - 1
+        let y = -(e.pageY / canvas.clientHeight) * 2 + 1
+        vertices.push(x, y)
+        if (vertices.length > 0) {
+          gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW)
+          draw()
+        }
+      })
+
+      function draw() {
+        gl.clearColor(0.0, 0.0, 0.0, 1.0)
+        gl.clear(gl.COLOR_BUFFER_BIT)
+
+        // 线段
+        // gl.drawArrays(gl.LINES, 0, vertices.length / 2)
+        // 连续线段
+        // gl.drawArrays(gl.LINE_STRIP, 0, vertices.length / 2)
+        // 闭合线段
+        gl.drawArrays(gl.LINE_LOOP, 0, vertices.length / 2)
+      }
+    </script>
+  </body>
+</html>

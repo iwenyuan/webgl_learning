@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>动态绘制点</title>
+    <script src="./initShader.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas width="500" height="500" id="webgl"></canvas>
+    <script>
+      let canvas = document.getElementById("webgl")
+      let gl = canvas.getContext("webgl")
+      let vertexSource = `
+      attribute vec2 a_position;
+      void main(){
+        gl_Position = vec4(a_position,0.0,1.0);
+        gl_PointSize = 5.0;
+      }`
+
+      let fragmentSource = `
+      void main(){
+        gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+      }`
+
+      initShaders(gl, vertexSource, fragmentSource)
+
+      gl.clearColor(0.0, 0.0, 0.0, 1.0)
+      gl.clear(gl.COLOR_BUFFER_BIT)
+
+      let points = []
+      //  1. 由于webgl的坐标范围是[-1, 1]，坐标的取值为[0, 2]
+      //  所以 a_Position / a_Screen_Size 将传入(x, y)的坐标值转换为[0，1]
+      //  而(a_Position / a_Screen_Size) * 2.0 将坐标转换为[0, 2]
+      //  (a_Position / a_Screen_Size) * 2.0 - 1.0 将坐标转换为[-1, 1]
+      //  2. 由于webgl坐标系的y轴正方向和canvas y轴正方向相反，所以
+      //  -((e.pageY / canvas.clientHeight) * 2 - 1) 将y轴方向转换
+      canvas.addEventListener("click", function (e) {
+        let x = (e.pageX / canvas.clientWidth) * 2 - 1
+        let y = -(e.pageY / canvas.clientHeight) * 2 + 1
+        points.push([x, y])
+        draw()
+      })
+
+      function draw() {
+        gl.clear(gl.COLOR_BUFFER_BIT)
+
+        for (let i = 0; i < points.length; i++) {
+          let a_position = gl.getAttribLocation(gl.program, "a_position")
+          gl.vertexAttrib2f(a_position, ...points[i])
+          gl.drawArrays(gl.POINTS, 0, 1)
+        }
+      }
+    </script>
+  </body>
+</html>

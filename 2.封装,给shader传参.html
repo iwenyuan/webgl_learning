@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>initShader初始化函数</title>
+    <script src="./initShader.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas width="500" height="500" id="webgl"></canvas>
+    <script>
+      let canvas = document.getElementById("webgl")
+      let gl = canvas.getContext("webgl")
+
+      let vertexSource = `
+      attribute vec2 a_position;
+      attribute float a_size;
+      void main(){
+        gl_Position = vec4(a_position,0.0,1.0);
+        gl_PointSize = a_size;
+      }`
+
+      let fragmentSource = `
+      void main(){
+        gl_FragColor = vec4(0.0,1.0,0.0,1.0);
+      }`
+
+      initShaders(gl, vertexSource, fragmentSource)
+
+      gl.clearColor(0.0, 0.0, 0.0, 1.0)
+      gl.clear(gl.COLOR_BUFFER_BIT)
+
+      let x = 0
+      let y = 0
+      let n = 10000
+      for (let i = 0; i < n; i++) {
+        let r = i / 1000
+        x = r * Math.cos(i)
+        y = r * Math.sin(i)
+
+        let a_position = gl.getAttribLocation(gl.program, "a_position")
+        let a_size = gl.getAttribLocation(gl.program, "a_size")
+        gl.vertexAttrib2f(a_position, x, y)
+        gl.vertexAttrib1f(a_size, r * 5)
+
+        gl.drawArrays(gl.POINTS, 0, 1)
+      }
+    </script>
+  </body>
+</html>

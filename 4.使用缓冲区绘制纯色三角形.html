@@ -3,31 +3,30 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>绘制渐变三角形</title>
+    <title>使用缓冲区绘制纯色三角形</title>
     <script src="./initShader.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+    </style>
   </head>
   <body>
-    <canvas id="webgl" width="400" height="400"></canvas>
+    <canvas width="500" height="500" id="webgl"></canvas>
     <script>
       let canvas = document.getElementById("webgl")
       let gl = canvas.getContext("webgl")
-
       let vertexSource = `
       attribute vec2 a_position;
-      attribute vec3 a_color;
-      varying vec3 v_color;
-
       void main(){
-        v_color = a_color;
         gl_Position = vec4(a_position,0.0,1.0);
+        gl_PointSize = 5.0;
       }`
 
       let fragmentSource = `
-      precision mediump float;
-      varying vec3 v_color;
-
       void main(){
-        gl_FragColor = vec4(v_color,1.0);
+        gl_FragColor = vec4(1.0,0.0,0.0,1.0);
       }`
 
       initShaders(gl, vertexSource, fragmentSource)
@@ -35,25 +34,32 @@
       gl.clearColor(0.0, 0.0, 0.0, 1.0)
       gl.clear(gl.COLOR_BUFFER_BIT)
 
-      let vertices = [-0.5, 0.0, 1.0, 0.0, 0.0, 0.5, 0.0, 0.0, 1.0, 0.0, 0.0, 0.8, 0.0, 0.0, 1.0]
-
+      let vertices = [-0.5, -0.5, 0.5, -0.5, 0.0, 0.5]
       vertices = new Float32Array(vertices)
 
-      let FSIZE = vertices.BYTES_PER_ELEMENT
-
+      // 创建缓冲区
       let buffer = gl.createBuffer()
+      // 绑定缓冲区
       gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
+      // 将数据写入缓冲区
       gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW)
 
       let a_position = gl.getAttribLocation(gl.program, "a_position")
-      let a_color = gl.getAttribLocation(gl.program, "a_color")
 
-      gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 5 * FSIZE, 0)
-
-      gl.vertexAttribPointer(a_color, 3, gl.FLOAT, false, 5 * FSIZE, 2 * FSIZE)
+      //每次取两个数据
+      var size = 2
+      //每个数据的类型是32位浮点型
+      var type = gl.FLOAT
+      //不需要归一化数据
+      var normalize = false
+      // 每次迭代运行需要移动数据数 * 每个数据所占内存 到下一个数据开始点。
+      var stride = 0
+      // 从缓冲起始位置开始读取
+      var offset = 0
+      // 将 a_Position 变量获取数据的缓冲区指向当前绑定的 buffer。
+      gl.vertexAttribPointer(a_position, size, type, normalize, stride, offset)
 
       gl.enableVertexAttribArray(a_position)
-      gl.enableVertexAttribArray(a_color)
 
       gl.drawArrays(gl.TRIANGLES, 0, 3)
     </script>
