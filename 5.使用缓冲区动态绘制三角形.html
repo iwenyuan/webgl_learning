@@ -19,13 +19,20 @@
       let gl = canvas.getContext("webgl")
       let vertexSource = `
       attribute vec2 a_position;
+      attribute vec3 a_color;
+      varying vec3 v_color;
+
       void main(){
+        v_color = a_color;
         gl_Position = vec4(a_position,0.0,1.0);
       }`
 
       let fragmentSource = `
+      precision mediump float;
+      varying vec3 v_color;
+
       void main(){
-        gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+        gl_FragColor = vec4(v_color,1.0);
       }`
 
       initShaders(gl, vertexSource, fragmentSource)
@@ -33,31 +40,40 @@
       gl.clearColor(0.0, 0.0, 0.0, 1.0)
       gl.clear(gl.COLOR_BUFFER_BIT)
 
+      let vertices = [
+        // x    y      r    g   b
+        -0.5,
+        0.0,
+        1.0,
+        0.0,
+        0.0, // 第一个点的信息
+        0.5,
+        0.0,
+        0.0,
+        1.0,
+        0.0, // 第二个点的信息
+        0.0,
+        0.8,
+        0.0,
+        0.0,
+        1.0, // 第三个点的信息
+      ]
+      vertices = new Float32Array(vertices)
+      let FSIZE = vertices.BYTES_PER_ELEMENT
+
       let a_position = gl.getAttribLocation(gl.program, "a_position")
+      let a_color = gl.getAttribLocation(gl.program, "a_color")
 
       let buffer = gl.createBuffer()
       gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
-      gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0)
+      gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW)
+      gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 5 * FSIZE, 0)
+      gl.vertexAttribPointer(a_color, 3, gl.FLOAT, false, 5 * FSIZE, 2 * FSIZE)
+
       gl.enableVertexAttribArray(a_position)
+      gl.enableVertexAttribArray(a_color)
 
-      let vertices = []
-      canvas.addEventListener("click", function (e) {
-        let x = (e.pageX / canvas.clientWidth) * 2 - 1
-        let y = -(e.pageY / canvas.clientHeight) * 2 + 1
-        vertices.push(x, y)
-        if (vertices.length % 6 === 0) {
-          gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
-          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW)
-          draw()
-        }
-      })
-
-      function draw() {
-        gl.clearColor(0.0, 0.0, 0.0, 1.0)
-        gl.clear(gl.COLOR_BUFFER_BIT)
-
-        gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 2)
-      }
+      gl.drawArrays(gl.TRIANGLES, 0, 3)
     </script>
   </body>
 </html>
